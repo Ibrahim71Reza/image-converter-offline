@@ -63,3 +63,53 @@ def test_parse_imagemagick_format_list() -> None:
     assert formats["PNG"].can_write is True
     assert formats["JPEG"].primary_extension == ".jpg"
     assert formats["HEIC"].can_write is True
+
+
+def test_folder_discovery_can_skip_unsupported_files(tmp_path: Path) -> None:
+    root = tmp_path / "input"
+    root.mkdir()
+    image = root / "a.png"
+    readme = root / "README.md"
+    image.write_bytes(b"image")
+    readme.write_text("not an image", encoding="utf-8")
+
+    discovered = expand_input_paths(
+        [root],
+        allowed_extensions={".png"},
+        include_unsupported_files=False,
+    )
+
+    assert discovered == [image.resolve()]
+
+
+def test_batch_output_avoids_same_stem_collisions(tmp_path: Path) -> None:
+    root = tmp_path / "input"
+    root.mkdir()
+    a = root / "same.png"
+    b = root / "same.jpg"
+    outdir = tmp_path / "out"
+    Image.new("RGB", (8, 8), "white").save(a)
+    Image.new("RGB", (8, 8), "black").save(b)
+
+    service = ConverterService()
+    results = service.convert_batch([a, b], outdir, "webp", ConversionOptions(overwrite=True), source_roots=[root])
+
+    assert [result.success for result in results] == [True, True]
+    names = sorted(result.output_path.name for result in results)
+    assert names == ["same.webp", "same__from_jpg.webp"]
+    assert len({result.output_path for result in results}) == 2
+
+
+def test_batch_preserves_folder_structure(tmp_path: Path) -> None:
+    root = tmp_path / "input"
+    nested = root / "nested"
+    nested.mkdir(parents=True)
+    source = nested / "photo.png"
+    outdir = tmp_path / "out"
+    Image.new("RGB", (8, 8), "white").save(source)
+
+    service = ConverterService()
+    result = service.convert_batch([source], outdir, "jpg", source_roots=[root])[0]
+
+    assert result.success, result.message
+    assert result.output_path.parent == (outdir / "nested").resolve()

@@ -42,6 +42,12 @@ class ConverterService:
     def supported_inputs(self) -> list[FormatInfo]:
         return _dedupe_formats(fmt for backend in self.backends if backend.is_available() for fmt in backend.input_formats())
 
+    def supported_input_extensions(self) -> set[str]:
+        extensions: set[str] = set()
+        for fmt in self.supported_inputs():
+            extensions.update(ext.lower() for ext in fmt.extensions)
+        return extensions
+
     def supported_outputs(self) -> list[FormatInfo]:
         return _dedupe_formats(fmt for backend in self.backends if backend.is_available() for fmt in backend.output_formats())
 
@@ -78,26 +84,54 @@ class ConverterService:
                 return backend
         return None
 
+    def primary_extension_for(self, backend: ImageBackend | None, target_format: str) -> str:
+        target = normalise_format(target_format)
+        preferred_extensions = {"JPEG": ".jpg", "TIFF": ".tif"}
+        if target in preferred_extensions:
+            return preferred_extensions[target]
+        if backend is not None and backend.is_available():
+            for fmt in backend.output_formats():
+                if normalise_format(fmt.key) == target:
+                    return fmt.primary_extension
+        for fmt in self.supported_outputs():
+            if normalise_format(fmt.key) == target:
+                return fmt.primary_extension
+        return f".{target.lower()}"
+
     def convert_one(
         self,
         input_path: Path,
         output_dir: Path,
         target_format: str,
         options: ConversionOptions | None = None,
+        output_path: Path | None = None,
     ) -> ConversionResult:
         started = time.perf_counter()
         input_path = input_path.expanduser().resolve()
         output_dir = output_dir.expanduser().resolve()
+        if output_path is not None:
+            output_path = output_path.expanduser().resolve()
+
         if not input_path.exists():
-            return ConversionResult(input_path, output_dir, "None", False, "Input file does not exist.")
+            return ConversionResult(input_path, output_path or output_dir, "None", False, "Input file does not exist.")
         if not input_path.is_file():
-            return ConversionResult(input_path, output_dir, "None", False, "Input path is not a file.")
+            return ConversionResult(input_path, output_path or output_dir, "None", False, "Input path is not a file.")
 
         backend = self.choose_backend(input_path, target_format)
+        if output_path is None:
+            extension = self.primary_extension_for(backend, target_format)
+            output_path = _make_planned_output_path(
+                input_path=input_path,
+                output_dir=output_dir,
+                extension=extension,
+                overwrite=bool(options and options.overwrite),
+                used_paths=set(),
+            )
+
         if backend is None:
             return ConversionResult(
                 input_path=input_path,
-                output_path=output_dir / input_path.name,
+                output_path=output_path,
                 backend_name="None",
                 success=False,
                 message=f"No available backend can convert this file to {normalise_format(target_format)}.",
@@ -109,6 +143,7 @@ class ConverterService:
             output_dir=output_dir,
             target_format=normalise_format(target_format),
             options=options or ConversionOptions(),
+            output_path=output_path,
         )
         result = backend.convert(job)
         return ConversionResult(
@@ -127,10 +162,31 @@ class ConverterService:
         target_format: str,
         options: ConversionOptions | None = None,
         fail_fast: bool = False,
+        source_roots: Iterable[Path] | None = None,
+        preserve_structure: bool = True,
     ) -> list[ConversionResult]:
+        output_dir = output_dir.expanduser().resolve()
+        options = options or ConversionOptions()
+        roots = [_normalise_root(root) for root in (source_roots or [])]
+        used_paths: set[Path] = set()
         results: list[ConversionResult] = []
+
         for path in input_paths:
-            result = self.convert_one(path, output_dir, target_format, options)
+            resolved = path.expanduser().resolve()
+            backend = self.choose_backend(resolved, target_format)
+            extension = self.primary_extension_for(backend, target_format)
+            planned_output = _make_planned_output_path(
+                input_path=resolved,
+                output_dir=output_dir,
+                extension=extension,
+                overwrite=options.overwrite,
+                used_paths=used_paths,
+                source_roots=roots,
+                preserve_structure=preserve_structure,
+            )
+            used_paths.add(planned_output)
+
+            result = self.convert_one(resolved, output_dir, target_format, options, output_path=planned_output)
             results.append(result)
             if fail_fast and not result.success:
                 break
@@ -161,3 +217,55 @@ def _dedupe_formats(formats: Iterable[FormatInfo]) -> list[FormatInfo]:
             can_write=existing.can_write or fmt.can_write,
         )
     return sorted(by_key.values(), key=lambda f: f.label.lower())
+
+
+def _normalise_root(root: Path) -> Path:
+    return root.expanduser().resolve()
+
+
+def _relative_parent_for(input_path: Path, source_roots: Iterable[Path]) -> Path:
+    for root in sorted(source_roots, key=lambda p: len(str(p)), reverse=True):
+        try:
+            return input_path.relative_to(root).parent
+        except ValueError:
+            continue
+    return Path()
+
+
+def _make_planned_output_path(
+    input_path: Path,
+    output_dir: Path,
+    extension: str,
+    overwrite: bool,
+    used_paths: set[Path],
+    source_roots: Iterable[Path] | None = None,
+    preserve_structure: bool = False,
+) -> Path:
+    """Create a collision-safe output path for one conversion.
+
+    The first output uses the clean stem, e.g. `photo.png`. If another file in
+    the same batch would produce the same output path, a source-extension suffix
+    is added, e.g. `photo__from_jpg.png`. Existing files are overwritten only
+    when the user explicitly allowed overwrite and the path has not already been
+    used in the current batch.
+    """
+    extension = extension if extension.startswith(".") else f".{extension}"
+    relative_parent = _relative_parent_for(input_path, source_roots or []) if preserve_structure else Path()
+    target_dir = (output_dir / relative_parent).resolve()
+    base = input_path.stem
+    candidate = (target_dir / f"{base}{extension}").resolve()
+
+    if candidate in used_paths:
+        source_ext = input_path.suffix.lower().lstrip(".") or "source"
+        candidate = (target_dir / f"{base}__from_{source_ext}{extension}").resolve()
+
+    if candidate not in used_paths and (overwrite or not candidate.exists()):
+        return candidate
+
+    index = 1
+    stem = candidate.stem
+    while True:
+        numbered = (candidate.parent / f"{stem}_{index}{candidate.suffix}").resolve()
+        if numbered not in used_paths and (overwrite or not numbered.exists()):
+            return numbered
+        index += 1

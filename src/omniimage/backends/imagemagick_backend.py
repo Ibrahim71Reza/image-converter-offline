@@ -61,7 +61,8 @@ class ImageMagickBackend:
         if not format_info or not format_info.can_write:
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"ImageMagick cannot write {target_format}.")
 
-        output_path = _make_output_path(job.input_path, job.output_dir, format_info.primary_extension, job.options.overwrite)
+        output_path = job.output_path or _make_output_path(job.input_path, job.output_dir, format_info.primary_extension, job.options.overwrite)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         cmd = [
             self.executable,
             str(job.input_path),

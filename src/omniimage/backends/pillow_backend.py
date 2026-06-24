@@ -96,7 +96,10 @@ class PillowBackend:
         if not self.can_write(target_format):
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"Pillow cannot write {job.target_format}.")
 
-        output_path = _make_output_path(job.input_path, job.output_dir, self._formats[target_format].primary_extension, job.options.overwrite)
+        output_path = job.output_path or _make_output_path(
+            job.input_path, job.output_dir, self._formats[target_format].primary_extension, job.options.overwrite
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             with Image.open(job.input_path) as img:
                 save_kwargs = _save_kwargs(img, target_format, job.options)

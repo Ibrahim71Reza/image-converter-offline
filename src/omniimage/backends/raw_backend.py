@@ -65,7 +65,8 @@ class RawPyBackend:
         if not info:
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"rawpy cannot write {target_format}.")
 
-        output_path = _make_output_path(job.input_path, job.output_dir, info.primary_extension, job.options.overwrite)
+        output_path = job.output_path or _make_output_path(job.input_path, job.output_dir, info.primary_extension, job.options.overwrite)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             import rawpy
             import numpy as np

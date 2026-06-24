@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.0 - CLI hardening after real batch tests
+
+### Added
+- Optional report path behavior: `--report` now works without an argument and writes `conversion_report.csv` inside the output folder.
+- `--include-unsupported` for deliberate unsupported-file/error-report testing.
+- `--flat-output` for users who want all outputs in one folder.
+- Batch output planning that preserves source folder structure by default.
+- Collision-safe output naming for same-stem inputs, e.g. `sample.png` and `sample.jpg` no longer overwrite each other when converted to the same target.
+- Tests for auto reports, folder filtering, output collision safety, and folder-structure preservation.
+
+### Changed
+- Folder scans skip common non-image project/document files such as `.md`, `.json`, `.txt`, `.csv`, `.yaml`, and `.log` by default.
+- JPEG output paths now prefer `.jpg` consistently.
+
+### Fixed
+- Prevented same-stem files from silently overwriting earlier batch outputs when `--overwrite` is enabled.
+- Removed the need to pass a CSV path after `--report` for common CLI usage.
+
 ## 0.2.0 - Final starter upgrade
 
 ### Added

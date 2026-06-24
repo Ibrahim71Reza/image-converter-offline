@@ -4,7 +4,22 @@
 
 The project is built with a realistic global-release principle: no honest application can guarantee every image format ever invented, because some formats are proprietary, undocumented, obsolete, licensed, or require external codecs. OmniImage solves this professionally with multiple backends, dynamic format detection, and a plugin-style architecture.
 
-## What is new in v0.2.0
+## What is new in v0.3.0
+
+This release was hardened after real CLI batch testing with the provided test image suite.
+
+- `--report` can now be used without a path; it automatically writes `conversion_report.csv` inside the output folder
+- Folder scans now skip common non-image project/document files such as README, JSON, TXT, CSV, YAML, and logs by default
+- Added `--include-unsupported` for intentionally testing unsupported files and failure reporting
+- Recursive output now preserves the source folder structure by default
+- Added `--flat-output` for old single-folder output behavior
+- Batch conversion now prevents same-stem files from overwriting each other, even when `--overwrite` is enabled
+- Collision-safe outputs now use suffixes like `sample__from_jpg.png` when needed
+- JPEG output extension is standardized to `.jpg`
+- Added tests for auto reports, folder filtering, output collision safety, and folder-structure preservation
+- Version bumped to `0.3.0`
+
+## What was new in v0.2.0
 
 - Folder import in the GUI
 - Recursive folder import
@@ -35,6 +50,8 @@ The project is built with a realistic global-release principle: no honest applic
 - Preserve animation when possible
 - Alpha handling for JPEG/BMP output
 - Non-overwrite mode with automatic numbered filenames
+- Batch-safe output naming to prevent same-stem overwrite collisions
+- Recursive output that preserves folder structure by default
 - CSV conversion reports
 - CLI for automation and testing
 - Local Git-ready structure
@@ -108,10 +125,28 @@ Convert a folder recursively:
 omniimage-cli ./input-images --recursive --target webp --output-dir ./converted
 ```
 
-Write a CSV report:
+Write a CSV report automatically inside the output folder:
+
+```bash
+omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report
+```
+
+Write a CSV report to a specific path:
 
 ```bash
 omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report ./converted/report.csv
+```
+
+Include unsupported/non-image files during folder scans for failure-report testing:
+
+```bash
+omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report --include-unsupported
+```
+
+Flatten all outputs into a single output folder instead of preserving source folders:
+
+```bash
+omniimage-cli ./input-images --recursive --target png --output-dir ./converted --flat-output
 ```
 
 Check backend status:
@@ -177,6 +212,10 @@ Current included test suite covers:
 - Recursive path discovery
 - CLI backend listing
 - CLI conversion report generation
+- Auto report path handling
+- Folder scan filtering
+- Output collision prevention
+- Folder structure preservation
 - CSV report safety
 - ImageMagick format-list parsing
 

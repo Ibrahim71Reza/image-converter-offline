@@ -37,6 +37,7 @@ class ConversionJob:
     output_dir: Path
     target_format: str
     options: ConversionOptions = ConversionOptions()
+    output_path: Path | None = None
 
 
 @dataclass(frozen=True)
