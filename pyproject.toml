@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omniimage-converter"
+version = "0.1.0"
+description = "Portable offline desktop image converter with pluggable conversion backends."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "OmniImage Contributors"}]
+keywords = ["image", "converter", "desktop", "offline", "portable", "pyside6", "imagemagick", "pillow"]
+dependencies = [
+    "Pillow>=10.0.0",
+    "PySide6>=6.7.0",
+]
+
+[project.optional-dependencies]
+full = [
+    "pillow-heif>=0.16.0",
+    "rawpy>=0.21.0",
+    "numpy>=1.26.0",
+    "cairosvg>=2.7.0",
+]
+build = [
+    "pyinstaller>=6.0.0",
+]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+omniimage = "omniimage.main:main"
+omniimage-cli = "omniimage.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

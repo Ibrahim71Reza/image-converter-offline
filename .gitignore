@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+
+# Build output
+build/
+dist/
+*.spec.bak
+*.egg-info/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local vendor binaries; keep directory docs only
+vendor/imagemagick/*
+!vendor/imagemagick/.gitkeep
