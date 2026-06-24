@@ -1,268 +1,277 @@
-# OmniImage Converter
+<div align="center">
 
-**OmniImage Converter** is a portable offline desktop application for batch image conversion. It is designed for common everyday conversions such as PNG → JPEG, WebP → PNG, TIFF → JPEG, GIF → WebP, and for wider professional format support through optional/bundled backends.
+# 🔄 OmniImage Converter
 
-The project is built with a realistic global-release principle: no honest application can guarantee every image format ever invented, because some formats are proprietary, undocumented, obsolete, licensed, or require external codecs. OmniImage solves this professionally with multiple backends, dynamic format detection, and a plugin-style architecture.
+**Portable offline desktop image conversion for Windows, with source support for advanced cross-platform builds.**
 
-## What is new in v0.3.1
+[![Platform](https://img.shields.io/badge/Portable%20Release-Windows-blue?style=flat-square)](../../releases)
+[![Python](https://img.shields.io/badge/Python-3.12%20tested-blue?style=flat-square&logo=python&logoColor=white)](#)
+[![Release](https://img.shields.io/badge/Release-v0.3.1-success?style=flat-square)](../../releases)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-This is a Windows portable-build hotfix.
+OmniImage is designed for users who want a simple, powerful image converter that works entirely offline. It supports batch processing, preserves folder structures, generates reports, and expands its capabilities dynamically using professional backends like ImageMagick and rawpy.
 
-- Fixed the PyInstaller entry point that caused the portable EXE to fail with `ImportError: attempted relative import with no known parent package`
-- Added `packaging/pyinstaller_entry.py` as the correct frozen-app wrapper
-- Updated `scripts/build_windows.ps1` to build from the wrapper instead of `src/omniimage/main.py`
-- Reduced unnecessary PySide6 collection during packaging
-- Version bumped to `0.3.1`
+[🔽 Download](#-download--quick-start) • [✨ Features](#-main-features) • [💻 Command Line](#-command-line-usage) • [🛠️ Developers](#%EF%B8%8F-developer--build-guide)
 
-## What was new in v0.3.0
+</div>
 
-This release was hardened after real CLI batch testing with the provided test image suite.
+---
 
-- `--report` can now be used without a path; it automatically writes `conversion_report.csv` inside the output folder
-- Folder scans now skip common non-image project/document files such as README, JSON, TXT, CSV, YAML, and logs by default
-- Added `--include-unsupported` for intentionally testing unsupported files and failure reporting
-- Recursive output now preserves the source folder structure by default
-- Added `--flat-output` for old single-folder output behavior
-- Batch conversion now prevents same-stem files from overwriting each other, even when `--overwrite` is enabled
-- Collision-safe outputs now use suffixes like `sample__from_jpg.png` when needed
-- JPEG output extension is standardized to `.jpg`
-- Added tests for auto reports, folder filtering, output collision safety, and folder-structure preservation
-- Version bumped to `0.3.0`
+## 🚀 Download & Quick Start
 
-## What was new in v0.2.0
+For normal Windows users, **no Python installation is required**. Just download, extract, and run.
 
-- Folder import in the GUI
-- Recursive folder import
-- Drag-and-drop folder support
-- Cancel button for long batch jobs
-- CSV conversion report generation
-- Safer target-format list for mixed batches: the GUI now shows formats that every queued file can convert to
-- CLI no longer requires dummy inputs for `--list-backends` or `--list-formats`
-- CLI folder input support
-- CLI recursive mode
-- CLI CSV report output
-- CLI fail-fast mode
-- Shared format-alias handling: `jpg` → `JPEG`, `tif` → `TIFF`
-- CSV formula-injection protection in reports
-- Better tests for path discovery, reports, aliases, non-overwrite mode, CLI, and ImageMagick format parsing
-- Version bumped to `0.2.0`
+### Windows
 
-## Core features
+1. Go to the **[Releases](../../releases)** page.
+2. Download `OmniImage-Portable-v0.3.1-Windows.zip`.
+3. **Extract** the ZIP file. Do not run it from inside the ZIP.
+4. Open the extracted `OmniImage` folder.
+5. Double-click `OmniImage.exe`.
+6. Add your images and click **Convert Now**.
 
-- Offline desktop GUI
-- Portable-app build scripts
-- Drag-and-drop file and folder queue
-- Batch conversion
-- Dynamic target-format list based on installed/bundled backends
-- Mixed-batch-safe target list
-- Quality control for lossy output
-- Preserve metadata when possible
-- Preserve animation when possible
-- Alpha handling for JPEG/BMP output
-- Non-overwrite mode with automatic numbered filenames
-- Batch-safe output naming to prevent same-stem overwrite collisions
-- Recursive output that preserves folder structure by default
-- CSV conversion reports
-- CLI for automation and testing
-- Local Git-ready structure
-- PyInstaller packaging scripts for portable releases
+---
 
-## Conversion backends
+## 🖼️ What can OmniImage do?
 
-- **rawpy backend**: optional camera RAW importer for formats such as DNG, NEF, CR2, ARW, RAF, RW2, ORF, and others.
-- **ImageMagick backend**: wide-format engine for public releases. Bundle ImageMagick into `vendor/imagemagick/` or install it on the target machine.
-- **Pillow backend**: dependable built-in path for common formats such as PNG, JPEG, WebP, BMP, TIFF, GIF, ICO, PDF, TGA, DDS, PCX, PSD reading, and more depending on the local Pillow build.
+OmniImage handles common and professional image formats. Here are a few example conversions:
 
-Backend preference order is:
+| From     | To     | From    | To                  |
+| :------- | :----- | :------ | :------------------ |
+| **PNG**  | ➡️ JPG | **BMP** | ➡️ PNG              |
+| **JPG**  | ➡️ PNG | **GIF** | ➡️ WEBP             |
+| **AVIF** | ➡️ GIF | **ICO** | ➡️ PNG              |
+| **WEBP** | ➡️ PNG | **TGA** | ➡️ JPG              |
+| **TIFF** | ➡️ JPG | **RAW** | ➡️ JPG / PNG / WEBP |
 
-1. rawpy
-2. ImageMagick
-3. Pillow
+> 💡 **Note:** The exact available formats depend on the conversion backends included or installed on your system. OmniImage detects supported formats dynamically instead of making unrealistic claims about every image format ever created.
 
-That order gives camera RAW files a high-quality RAW-specific path, uses ImageMagick for broad public-release coverage, and keeps Pillow as a strong common-format fallback.
+---
 
-## Install for development
+## ✨ Main Features
 
+### 🖥️ Easy Desktop App
+* **Offline First:** No internet required for normal conversion.
+* **Portable:** Runs from an extracted portable folder.
+* **Drag-and-Drop:** Add individual files or entire folders.
+* **Smart UI:** Choose output folders and open them directly from the app.
+
+### ⚡ Batch Conversion
+* Convert massive folders of images at once.
+* **Recursive Scanning:** Converts images inside sub-folders.
+* **Structure Preservation:** Keeps your original folder layout intact (or use flat output via CLI).
+* **Safe Output:** Prevents files with the same name from overwriting each other.
+
+### 🎯 Smart Format Handling
+* Target formats update automatically based on your queued files.
+* Understands format aliases (e.g., treats `.jpg` and `.jpeg` the same).
+* Handles transparent images when converting to formats without alpha support, such as JPEG or BMP.
+* Skips unsupported/non-image documents automatically.
+
+### 📊 Reports & Logs
+* View live progress in the GUI conversion log.
+* Automatically generate **CSV Conversion Reports** detailing status, time, output paths, and errors.
+
+---
+
+## ⚙️ Supported Backends
+
+OmniImage is powered by a multi-backend engine. Backend priority is: `rawpy` ➡️ `ImageMagick` ➡️ `Pillow`.
+
+* 🟢 **Pillow:** Handles common formats (PNG, JPG, WEBP, BMP, TIFF, GIF, ICO, TGA, DDS, PCX, PSD read, PDF write).
+* 📷 **rawpy:** Handles real camera RAW imports (DNG, NEF, CR2, CR3, ARW, RAF, RW2, ORF, PEF, SRW).
+* 🪄 **ImageMagick:** Handles wider professional format coverage. Can be installed on your system or bundled inside `vendor/imagemagick/`.
+
+---
+
+## 💻 Command-Line Usage
+
+OmniImage comes with a fully-featured CLI for automation and advanced users.
+
+**Basic Conversion:**
 ```bash
-python -m venv .venv
+omniimage-cli sample.png --target jpg --output-dir converted
+```
+**Batch & Folder Conversion:**
+```bash
+# Convert multiple specific files
+omniimage-cli one.png two.webp three.tiff --target jpg --output-dir converted
+
+# Convert a folder recursively
+omniimage-cli ./input-images --recursive --target webp --output-dir ./converted
+```
+**Reports & Output Modifiers:**
+```bash
+# Generate an automatic CSV report
+omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report
+
+# Flatten all outputs into a single folder (ignore original folder structure)
+omniimage-cli ./input-images --recursive --target png --output-dir ./converted --flat-output
+```
+**System Info:**
+```bash
+omniimage-cli --list-backends
+omniimage-cli --list-formats
 ```
 
-Windows:
+---
 
+## ❓ Troubleshooting
+
+<details>
+<summary><b>The app does not open?</b></summary>
+Make sure you extracted the ZIP first. Do not run the app directly from inside the compressed ZIP.<br>
+<i>Correct: Extract ZIP → Open OmniImage folder → Run OmniImage.exe</i>
+</details>
+
+<details>
+<summary><b>Windows shows a security warning?</b></summary>
+Unsigned apps may show a Windows SmartScreen warning. Click <b>More info</b> and then <b>Run anyway</b> (only do this if you downloaded the app from the official GitHub Releases page).
+</details>
+
+<details>
+<summary><b>A format appears but conversion fails?</b></summary>
+Some formats support only certain image modes (e.g., they may not support transparency, animation, or a specific color depth). Try converting to PNG, JPG, TIFF, or WEBP first.
+</details>
+
+<details>
+<summary><b>RAW files fail to convert?</b></summary>
+You must use real camera RAW files. Fake files simply renamed to `.cr2`, `.nef`, or `.dng` will not work.
+</details>
+
+<details>
+<summary><b>I need more formats!</b></summary>
+Install or bundle ImageMagick on your system, then restart OmniImage.
+</details>
+
+---
+
+## 🛠️ Developer & Build Guide
+
+*(Click to expand sections below)*
+
+<details>
+<summary><b>Local Development Setup</b></summary>
+
+Create and activate a virtual environment:
+
+**Windows:**
 ```powershell
+python -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -e .[full,dev,build]
 ```
 
-macOS/Linux:
-
+**macOS/Linux:**
 ```bash
+python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e .[full,dev,build]
 ```
 
-## Run desktop app
-
+**Run the app:**
 ```bash
 omniimage
-```
-
-or:
-
-```bash
+# or
 python -m omniimage.main
 ```
+</details>
 
-## Run CLI
+<details>
+<summary><b>Building the Portable App</b></summary>
 
-Convert one file:
-
-```bash
-omniimage-cli sample.png --target jpg --output-dir converted
-```
-
-Convert multiple files:
-
-```bash
-omniimage-cli one.png two.webp three.tiff --target jpg --output-dir converted
-```
-
-Convert a folder recursively:
-
-```bash
-omniimage-cli ./input-images --recursive --target webp --output-dir ./converted
-```
-
-Write a CSV report automatically inside the output folder:
-
-```bash
-omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report
-```
-
-Write a CSV report to a specific path:
-
-```bash
-omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report ./converted/report.csv
-```
-
-Include unsupported/non-image files during folder scans for failure-report testing:
-
-```bash
-omniimage-cli ./input-images --recursive --target png --output-dir ./converted --report --include-unsupported
-```
-
-Flatten all outputs into a single output folder instead of preserving source folders:
-
-```bash
-omniimage-cli ./input-images --recursive --target png --output-dir ./converted --flat-output
-```
-
-Check backend status:
-
-```bash
-omniimage-cli --list-backends
-```
-
-List supported formats:
-
-```bash
-omniimage-cli --list-formats
-```
-
-## Bundle ImageMagick for maximum offline coverage
-
-For a serious global release, include the correct platform-specific ImageMagick binary in:
-
-```text
-vendor/imagemagick/
-```
-
-Expected executable names:
-
-- Windows: `vendor/imagemagick/magick.exe`
-- macOS/Linux: `vendor/imagemagick/magick`
-- fallback name: `vendor/imagemagick/convert`
-
-You can also set this environment variable during development:
-
-```bash
-OMNIIMAGE_MAGICK=/absolute/path/to/magick
-```
-
-## Build portable app
-
-### Windows
-
+**Windows:**
 ```powershell
 scripts\build_windows.ps1
+Compress-Archive -Path "dist\OmniImage" -DestinationPath "OmniImage-Portable-v0.3.1-Windows.zip" -Force
 ```
 
-### macOS/Linux
-
+**macOS/Linux:**
 ```bash
 bash scripts/build_unix.sh
 ```
+</details>
 
-Build output will be created under `dist/`.
+<details>
+<summary><b>Testing & Architecture</b></summary>
 
-## Test
-
+Run tests using pytest:
 ```bash
 pytest
 ```
 
-Current included test suite covers:
-
-- PNG → JPEG conversion
-- Alpha-to-JPEG handling
-- Supported target lookup
-- Non-overwrite filename generation
-- Recursive path discovery
-- CLI backend listing
-- CLI conversion report generation
-- Auto report path handling
-- Folder scan filtering
-- Output collision prevention
-- Folder structure preservation
-- CSV report safety
-- ImageMagick format-list parsing
-
-## Project structure
-
+**Project Structure:**
 ```text
 src/omniimage/
-  app.py                         # PySide6 desktop UI
-  cli.py                         # CLI entry point
-  converter.py                   # backend selection and batch service
-  file_discovery.py              # file/folder expansion helpers
-  format_utils.py                # target format aliases and CSV safety
-  reports.py                     # CSV report writer
-  backends/
-    base.py                      # backend protocol and data models
-    pillow_backend.py            # common image conversion
-    imagemagick_backend.py       # wide-format ImageMagick conversion
-    raw_backend.py               # optional camera RAW support
-scripts/
-  build_windows.ps1
-  build_unix.sh
-packaging/
-  OmniImage.spec
-vendor/imagemagick/
-  .gitkeep                       # put platform-specific ImageMagick binaries here for releases
+  ├── app.py                     # Desktop GUI
+  ├── cli.py                     # CLI entry point
+  ├── converter.py               # Backend selection and batch service
+  ├── reports.py                 # CSV report writer
+  └── backends/                  # Format processing modules
+        ├── base.py              
+        ├── pillow_backend.py    
+        ├── imagemagick_backend.py 
+        └── raw_backend.py       
+
+scripts/                         # Build scripts
+packaging/                       # PyInstaller templates
+tests/                           # Automated test suite
 ```
+</details>
 
-## Release checklist for a serious public app
+<details>
+<summary><b>Public Release Checklist</b></summary>
 
-- Bundle ImageMagick separately for Windows, macOS, and Linux.
-- Test conversions across at least: PNG, JPEG, WebP, TIFF, BMP, GIF, ICO, HEIC/HEIF, AVIF, SVG, PDF, EPS, PSD, and camera RAW.
-- Confirm licenses for every bundled binary and codec.
-- Sign Windows/macOS releases.
-- Add CI builds for Windows, macOS, and Linux.
-- Run malware/false-positive checks on packaged `.exe` builds.
-- Decide whether update checks are allowed; keep them disabled by default for true offline positioning.
+- [ ] Test Windows portable ZIP on a clean Windows machine.
+- [ ] Test PNG, JPEG, WebP, TIFF, BMP, GIF, ICO, AVIF, HEIC/HEIF, SVG, PDF, PSD, and RAW files.
+- [ ] Bundle ImageMagick for each platform if maximum offline coverage is required.
+- [ ] Confirm licenses for every bundled binary and codec.
+- [ ] Sign Windows and macOS releases.
+- [ ] Add CI builds for Windows, macOS, and Linux.
+- [ ] Scan packaged builds for malware false positives.
+- [ ] Keep update checks disabled by default for offline positioning.
+</details>
 
-## Important limitation
+---
 
-OmniImage can be made extremely broad, but it cannot truthfully promise every image conversion that exists on earth. A public, trustworthy product should say: **supports a very wide and extensible image-format set, with exact supported formats shown inside the app based on installed/bundled backends.**
+## 📜 Release Notes
+
+> **Note:** Portable pre-compiled releases are currently provided for **Windows only**. macOS and Linux users can easily run or build from source using the Developer Setup guide above.
+
+<details>
+<summary><b>v0.3.1 (Current)</b></summary>
+
+* Fixed PyInstaller entry point error (`ImportError: attempted relative import...`).
+* Added `packaging/pyinstaller_entry.py`.
+* Updated Windows build script to build from the wrapper.
+* Reduced unnecessary PySide6 collection during packaging.
+</details>
+
+<details>
+<summary><b>v0.3.0</b></summary>
+
+* `--report` can be used without a path.
+* Automatic `conversion_report.csv` inside the output folder.
+* Folder scans skip common non-image files by default.
+* Recursive output preserves folder structure by default (`--flat-output` added).
+* Prevents same-stem overwrite collisions.
+* JPEG output standardized to `.jpg`.
+</details>
+
+<details>
+<summary><b>v0.2.0</b></summary>
+
+* Folder import in GUI (recursive, drag-and-drop).
+* Cancel button for long batch jobs.
+* CSV conversion reports.
+* CLI folder input, fail-fast mode, and format aliases.
+* CSV formula-injection protection.
+</details>
+
+---
+
+## ⚖️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
