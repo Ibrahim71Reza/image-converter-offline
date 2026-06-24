@@ -10,6 +10,7 @@ from typing import Iterable
 
 from .base import ConversionJob, ConversionResult, FormatInfo
 from .pillow_backend import _make_output_path
+from ..format_utils import normalise_format
 
 
 class ImageMagickBackend:
@@ -43,7 +44,7 @@ class ImageMagickBackend:
     def can_write(self, target_format: str) -> bool:
         if not self.is_available():
             return False
-        fmt = self._normalise_format(target_format)
+        fmt = normalise_format(target_format)
         return fmt in {f.key for f in self.output_formats()}
 
     def supported_outputs_for(self, path: Path) -> Iterable[FormatInfo]:
@@ -55,7 +56,7 @@ class ImageMagickBackend:
         if not self.executable:
             return ConversionResult(job.input_path, job.input_path, self.name, False, "ImageMagick executable was not found.")
 
-        target_format = self._normalise_format(job.target_format)
+        target_format = normalise_format(job.target_format)
         format_info = self._load_formats().get(target_format)
         if not format_info or not format_info.can_write:
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"ImageMagick cannot write {target_format}.")
@@ -110,18 +111,8 @@ class ImageMagickBackend:
         return self._formats
 
     @staticmethod
-    def _normalise_format(value: str) -> str:
-        fmt = value.upper().lstrip(".")
-        if fmt == "JPG":
-            return "JPEG"
-        return fmt
-
-    @staticmethod
     def _format_from_extension(extension: str) -> str:
-        fmt = extension.upper().lstrip(".")
-        if fmt == "JPG":
-            return "JPEG"
-        return fmt
+        return normalise_format(extension)
 
     @staticmethod
     def _find_magick() -> str | None:
@@ -155,7 +146,14 @@ def _parse_magick_format_list(output: str) -> dict[str, FormatInfo]:
         line = raw_line.strip()
         if not line or line.startswith("---") or line.startswith("Format"):
             continue
-        match = re.match(r"^(?P<name>[A-Za-z0-9_+.-]+)\*?\s+(?P<module>\S+)\s+(?P<mode>[rRwW+-]{2,4})\s*(?P<desc>.*)$", line)
+        # ImageMagick 7 commonly prints either:
+        #   PNG* PNG       rw-   Portable Network Graphics
+        # or:
+        #   PNG* rw-       Portable Network Graphics
+        match = re.match(
+            r"^(?P<name>[A-Za-z0-9_+.-]+)\*?\s+(?:(?P<module>\S+)\s+)?(?P<mode>[rRwW+-]{2,4})\s*(?P<desc>.*)$",
+            line,
+        )
         if not match:
             continue
 

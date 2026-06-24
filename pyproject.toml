@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omniimage-converter"
-version = "0.1.0"
+version = "0.2.0"
 description = "Portable offline desktop image converter with pluggable conversion backends."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,6 +28,7 @@ build = [
 ]
 dev = [
     "pytest>=8.0.0",
+    "ruff>=0.6.0",
 ]
 
 [project.scripts]

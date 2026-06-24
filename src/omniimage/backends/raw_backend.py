@@ -7,6 +7,7 @@ from PIL import Image
 
 from .base import ConversionJob, ConversionResult, FormatInfo
 from .pillow_backend import _make_output_path, _prepare_frame, _save_kwargs
+from ..format_utils import normalise_format
 
 RAW_EXTENSIONS = (
     ".3fr", ".ari", ".arw", ".bay", ".braw", ".cr2", ".cr3", ".crw", ".dcr", ".dng",
@@ -48,7 +49,7 @@ class RawPyBackend:
         return self.is_available() and path.suffix.lower() in RAW_EXTENSIONS
 
     def can_write(self, target_format: str) -> bool:
-        return target_format.upper().lstrip(".") in OUTPUT_FORMATS
+        return normalise_format(target_format) in OUTPUT_FORMATS
 
     def supported_outputs_for(self, path: Path) -> Iterable[FormatInfo]:
         if not self.can_read(path):
@@ -59,7 +60,7 @@ class RawPyBackend:
         if not self.is_available():
             return ConversionResult(job.input_path, job.input_path, self.name, False, "rawpy is not installed.")
 
-        target_format = "JPEG" if job.target_format.upper() == "JPG" else job.target_format.upper().lstrip(".")
+        target_format = normalise_format(job.target_format)
         info = OUTPUT_FORMATS.get(target_format)
         if not info:
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"rawpy cannot write {target_format}.")

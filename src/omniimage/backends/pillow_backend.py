@@ -6,6 +6,7 @@ from typing import Iterable
 from PIL import Image, ImageSequence, UnidentifiedImageError
 
 from .base import ConversionJob, ConversionOptions, ConversionResult, FormatInfo
+from ..format_utils import normalise_format
 
 
 # Friendly names for common Pillow format keys.
@@ -83,7 +84,7 @@ class PillowBackend:
             return False
 
     def can_write(self, target_format: str) -> bool:
-        return target_format.upper() in self._write_formats
+        return normalise_format(target_format) in self._write_formats
 
     def supported_outputs_for(self, path: Path) -> Iterable[FormatInfo]:
         if not self.can_read(path):
@@ -91,7 +92,7 @@ class PillowBackend:
         return self.output_formats()
 
     def convert(self, job: ConversionJob) -> ConversionResult:
-        target_format = self._normalise_format(job.target_format)
+        target_format = normalise_format(job.target_format)
         if not self.can_write(target_format):
             return ConversionResult(job.input_path, job.input_path, self.name, False, f"Pillow cannot write {job.target_format}.")
 
@@ -119,13 +120,6 @@ class PillowBackend:
             return ConversionResult(job.input_path, output_path, self.name, True, "Converted successfully.")
         except Exception as exc:  # noqa: BLE001 - UI needs user-facing message.
             return ConversionResult(job.input_path, output_path, self.name, False, str(exc))
-
-    def _normalise_format(self, value: str) -> str:
-        fmt = value.upper().lstrip(".")
-        if fmt == "JPG":
-            return "JPEG"
-        return fmt
-
 
 def _ordered_extensions(fmt: str, extensions: list[str]) -> tuple[str, ...]:
     preferred = {

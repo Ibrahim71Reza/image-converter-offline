@@ -46,6 +46,7 @@ class ConversionResult:
     backend_name: str
     success: bool
     message: str = ""
+    elapsed_seconds: float = 0.0
 
 
 class ImageBackend(Protocol):
