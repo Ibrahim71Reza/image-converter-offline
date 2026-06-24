@@ -9,8 +9,7 @@ pyinstaller `
   --windowed `
   --name "OmniImage" `
   --add-data "vendor/imagemagick;vendor/imagemagick" `
-  --collect-all PySide6 `
-  --collect-all PIL `
-  src/omniimage/main.py
+  --collect-submodules PIL `
+  packaging/pyinstaller_entry.py
 
 Write-Host "Build complete. Check dist/OmniImage/"

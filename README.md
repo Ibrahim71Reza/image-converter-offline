@@ -4,7 +4,17 @@
 
 The project is built with a realistic global-release principle: no honest application can guarantee every image format ever invented, because some formats are proprietary, undocumented, obsolete, licensed, or require external codecs. OmniImage solves this professionally with multiple backends, dynamic format detection, and a plugin-style architecture.
 
-## What is new in v0.3.0
+## What is new in v0.3.1
+
+This is a Windows portable-build hotfix.
+
+- Fixed the PyInstaller entry point that caused the portable EXE to fail with `ImportError: attempted relative import with no known parent package`
+- Added `packaging/pyinstaller_entry.py` as the correct frozen-app wrapper
+- Updated `scripts/build_windows.ps1` to build from the wrapper instead of `src/omniimage/main.py`
+- Reduced unnecessary PySide6 collection during packaging
+- Version bumped to `0.3.1`
+
+## What was new in v0.3.0
 
 This release was hardened after real CLI batch testing with the provided test image suite.
 

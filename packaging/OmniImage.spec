@@ -7,11 +7,11 @@ block_cipher = None
 root = Path.cwd()
 
 a = Analysis(
-    [str(root / "src" / "omniimage" / "main.py")],
+    [str(root / "packaging" / "pyinstaller_entry.py")],
     pathex=[str(root / "src")],
     binaries=[],
     datas=[(str(root / "vendor" / "imagemagick"), "vendor/imagemagick")],
-    hiddenimports=[],
+    hiddenimports=["PIL.AvifImagePlugin", "PIL.WebPImagePlugin", "PIL.JpegImagePlugin", "PIL.PngImagePlugin"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

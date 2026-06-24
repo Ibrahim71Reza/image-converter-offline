@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 - Windows portable build hotfix
+
+### Fixed
+- Fixed PyInstaller Windows build entry point. The portable EXE no longer launches `src/omniimage/main.py` as a top-level script, which caused `ImportError: attempted relative import with no known parent package`.
+
+### Changed
+- Windows build script now uses `packaging/pyinstaller_entry.py`, a package-safe wrapper around `omniimage.main:main`.
+- Reduced PyInstaller collection from all PySide6 modules to the required package/import path plus Pillow image plugins, making builds cleaner.
+
 ## 0.3.0 - CLI hardening after real batch tests
 
 ### Added
