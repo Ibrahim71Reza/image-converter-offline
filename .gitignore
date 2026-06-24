@@ -24,3 +24,13 @@ Thumbs.db
 # Local vendor binaries; keep directory docs only
 vendor/imagemagick/*
 !vendor/imagemagick/.gitkeep
+
+# Build and generated outputs
+build/
+dist/
+converted/
+OmniImage.spec
+*.zip
+.venv/
+__pycache__/
+.pytest_cache/
